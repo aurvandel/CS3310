@@ -42,21 +42,50 @@ def main():
     # Check if number is between 1-9
     if args.n > 10 or args.n < 1:
         parser.error("Please enter a number between 1-9")
-            
-    # get the initial permutation value and print it
-    permutation = initPermutations(args.n)
-    printList(permutation)
+        
+    # get the initial permutation value
+    init = initPermutations(args.n)    
     
-    #generate the next permutation in the list
+    perms = permutations(init)
     
+    for i in perms:
+        printList(i)
+
+
+def permutations(nums):
+    lst = []
     
+    # base case
+    if len(nums) == 0: 
+        return [] 
+  
+    # return element if it's the only one
+    if len(nums) == 1: 
+        return [nums]
     
+    # Iterate the input(lst) and calculate the permutation 
+    for i in range(len(nums)): 
+        m = nums[i]
+          
+       # Extract lst[i] or m from the list.  remLst is 
+       # remaining list 
+        remaining = nums[:i] + nums[i+1:]
+        print(remaining)
+  
+       # Generating all permutations where m is first 
+       # element 
+        for p in permutations(remaining): 
+            lst.append([m] + p) 
+    return lst
+        
     
 def initPermutations(num):
+    # range object converted to list
     return list(range(1, num + 1))
     
 
 def printList(nums):
+    # combines list into single string and prints
     print(''.join(str(i)for i in nums))
         
         
