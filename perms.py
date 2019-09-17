@@ -19,13 +19,13 @@ def nextperm(a):
         return True
  
 def perm3(n):
-    if type(n) is int:
-        if n < 1:
-            return []
-        a = list(range(n))
-    else:
-        a = sorted(n)
+    if n < 1:
+        return []
+    a = list(range(1, n + 1))
+    #a = sorted(n)
     u = [tuple(a)]
     while nextperm(a):
         u.append(tuple(a))
     return u
+
+print(perm3(3))
