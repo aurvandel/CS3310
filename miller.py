@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import random
 import argparse
 import sys
@@ -108,7 +109,7 @@ def millersTest(n):
             return True
         p *= 2
     return False
-    
+
 
 def isPrimeMiller(n):
     testTimes = 20
@@ -137,7 +138,7 @@ def testLoop(nums):
         if not isPrimeMiller(nums[i]):
             print(nums[i], "failed")
         # test if composite is prime
-        comp = nums[i] + nums[i + 1]
+        comp = nums[i] * nums[i + 1]
         if isPrimeMiller(comp):
             print(comp, "failed")
         # if test pass print dot
@@ -149,18 +150,18 @@ def main():
     #Get Command Line Arguments
     parser = argparse.ArgumentParser(description='Enter a number')
     parser.add_argument('n', type=int, help='Any positive integer greater than 1')
-    parser.add_argument('-t', '--test', action='store_true', 
+    parser.add_argument('-t', '--test', action='store_true',
     help="runs test function")
     args = parser.parse_args()
-    
+
     if args.test:
         test()
         sys.exit()
-        
+
     # Check if number is greater than 1
     if args.n <= 1:
         parser.error("Please enter a number greater than 1")
-    
+
     # edge case to check for 2
     if args.n == 2:
         print("true")
@@ -171,8 +172,8 @@ def main():
         print("true")
     else:
         print("false")
-   
-   
+
+
 if __name__ == "__main__":
     main()
     #test()
