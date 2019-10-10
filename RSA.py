@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 import random
-
-#TODO: unittests for toBase10, computeGCD, findRelativePrime, egcd
+import math
 
 # Write a class called RSA
 class RSA:
-    def __init__(self):
-        pass
 
-    
     # Write a method called GenerateKeys that takes two very long text strings as input.
     def GenerateKeys(self, str1, str2):
+        alphabet26 = "0123456789abcdefghijklmnopqrstuvwxyz"
         str1 = str1.replace(" ", "").lower()
         str2 = str2.replace(" ", "").lower()
 
-        p = self.toBase10(str1, 26)
-        q = self.toBase10(str2, 26)
+        p = toBase10(alphabet26, str1, 26)
+        q = toBase10(alphabet26, str2, 26)
         #mod by 10^200 to make them the right size. Ensure that they were longer than 10^200 before doing the mod, or print a Warning message.
         if p < 10**200:
             print("WARNING: number 1 is too small")
+            digitCount(p)
         if q < 10**200:
             print("WARNING: number 2 is too small")
+            digitCount(q)
         else:
             #Make them odd. Then start adding 2 until they are prime.
             p = p % 10**200
@@ -29,79 +28,130 @@ class RSA:
             q = q % 10**200
             if q % 2 == 0:
                 q += 1
-            while not self.isPrimeMiller(p):
+            while not isPrimeMiller(p):
                 p += 2
-            while not self.isPrimeMiller(q):
+            while not isPrimeMiller(q):
                 q += 2
 
             #Now you have your two, 200 digit prime numbers, p and q.
-            #Calculate n = p*q
+
             n = p * q
-            #Calculate r = (p-1)*(q-1)
             r = (p - 1)*(q - 1)
+
             #Find e – a 398 digit number that is relatively prime with r.
-            e = self.findRelativePrime(r)
+            e = findRelativePrime(r)
 
             #Find d – the inverse of e mod r.
-            gcd, d, z = self.egcd(e, r)
+            d = inverse(e, r)
 
-    def toBase10(self, s, base):
-        alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-        a = 0
-        for c in s:
-            value = alphabet.find(c)
-            a *= base
-            a += value
-        return
+            #Save n and e to a file called public.txt (write them as text, with 1 return after each number)
+            writeToFile(n, "public.txt")
+            writeToFile(e, "public.txt")
 
-    def computeGCD(self, x, y):
-        while y:
-            x, y = y, x % y
-        return x
-
-    def findRelativePrime(self, n):
-        nextN = n + 2
-        while self.computeGCD(n, nextN)  != 1:
-            nextN += 2
-        return nextN
-
-    # Python program for Extended Euclidean algorithm
-    def egcd(self, a, b):
-        if a == 0:
-            return (b, 0, 1)
-        else:
-            gcd, x, y = self.egcd(b % a, a)
-            return (gcd, y - (b // a) * x, x)
+            # Save n and d to a file called private.txt
+            writeToFile(n, "private.txt")
+            writeToFile(d, "private.txt")
 
 
-    def millersTest(self, n):
-        # Returns True if num is a prime number.
-        t = n - 1
-        s = 0
-        while t % 2 == 0:
-            # keep halving t while it is even (and use s
-            # to count how many times we halve t)
-            t = t // 2
-            s += 1
-        b = random.randrange(2, n)
-        if pow(b, t, n) == 1:
-            return True
-        p = t
-        for i in range(s):
-            if pow(b, p, n) == n - 1:
-                return True
-            p *= 2
-        return False
+    # Write a method called Encrypt that takes as parameters the name of an input text file and the name of an output text file.
+    def Encrypt(self, inFile, outFile):
+        alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        plainText = openFile(inFile)
+
+        # Treat the input file text as a base 70 integer, and convert it to base 10, using block sizes so as to not exceed integer n.
+        
+
+def openFile(inputfile):
+    fin = open(inputfile, "rb")
+    PlainTextBinary = fin.read()
+    PlainText = PlainTextBinary.decode("utf-8")
+    fin.close()
+    return PlainText
 
 
-    def isPrimeMiller(self, n):
-        testTimes = 20
-        for i in range(testTimes):
-            ok = self.millersTest(n)
-            if not ok:
-                return False
+def toBase10(alphabet, s, base):
+    a = 0
+    for c in s:
+        value = alphabet.find(c)
+        a *= base
+        a += value
+    return a
+
+
+def egcd(a, b):
+    lastR, r = abs(a), abs(b)
+    x, lastX, y, lastY = 0, 1, 1, 0
+    while r:
+        lastR, (quotient, r) = r, divmod(lastR, r)
+        x, lastX = lastX - quotient * x, x
+        y, lastY = lastY - quotient * y, y
+    return lastR, lastX * (-1 if a < 0 else 1), lastY * (-1 if b < 0 else 1)
+
+
+def inverse(a, m):
+    g, x, y = egcd(a, m)
+    if g != 1:
+        raise ValueError
+    return x % m
+
+
+def computeGCD(x, y):
+    while y:
+        x, y = y, x % y
+    return x
+
+
+def findRelativePrime(n):
+    # Should this be changed from 400 digits to 398 digits?
+    nextN = n // 100
+    while math.gcd(n, nextN) != 1:
+        nextN += 1
+    return nextN
+
+
+def millersTest(n):
+    # Returns True if num is a prime number.
+    t = n - 1
+    s = 0
+    while t % 2 == 0:
+        # keep halving t while it is even (and use s
+        # to count how many times we halve t)
+        t = t // 2
+        s += 1
+    b = random.randrange(2, n)
+    if pow(b, t, n) == 1:
         return True
-    
+    p = t
+    for i in range(s):
+        if pow(b, p, n) == n - 1:
+            return True
+        p *= 2
+    return False
+
+
+def isPrimeMiller(n):
+    testTimes = 20
+    for i in range(testTimes):
+        ok = millersTest(n)
+        if not ok:
+            return False
+    return True
+
+
+def digitCount(number):
+    count = 0
+    while number > 0:
+        number = number // 10
+        count = count + 1
+
+    print("\n Number of digits = %d" % count)
+
+
+def writeToFile(n, filename):
+    with open(filename, 'a') as file:
+        file.write(str(n))
+        file.write('\n')
+
 
 quote1 = "Wizards First Rule people are stupid Richard and Kahlan frowned even more People are stupid given proper " \
         "motivation almost anyone will believe almost anything Because people are stupid they will believe a lie " \
@@ -110,17 +160,12 @@ quote1 = "Wizards First Rule people are stupid Richard and Kahlan frowned even m
 quote2 = "A man will find a single coin in the mud and talk about it for days but when his inheritance comes and is" \
          " accounted one percent less than he expected then he will declare himself cheated"
 
-
 def main():
     rsa = RSA()
-    num1, num2 = rsa.GenerateKeys(quote1, quote2)
-    print(num1,  "\n",  num2)
-    # test to make sure the alphabet is mapped correctly
-#    alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-#    for c in alphabet:
-#        print(c, "=", rsa.toBase10(c, 26))
+    rsa.GenerateKeys(quote1, quote2)
+
         
     
     
 main()
-        
+
