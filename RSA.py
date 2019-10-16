@@ -59,7 +59,14 @@ class RSA:
         plainText = openFile(inFile)
 
         # Treat the input file text as a base 70 integer, and convert it to base 10, using block sizes so as to not exceed integer n.
-        
+        blocks = []
+        while len(plainText) >= 200:
+            newBlock = plainText[0, 200]
+            newBlockNum = toBase10(alphabet70, newBlock, 70)
+            # Encode each block using the rules of RSA.  (Read n and e from public.txt)
+            
+            plainText = plainText[200:]
+            
 
 def openFile(inputfile):
     fin = open(inputfile, "rb")
