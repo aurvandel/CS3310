@@ -60,13 +60,34 @@ class RSA:
 
         # Treat the input file text as a base 70 integer, and convert it to base 10, using block sizes so as to not exceed integer n.
         blocks = []
+        n, e = getPublicKey()
         while len(plainText) >= 200:
-            newBlock = plainText[0, 200]
+            newBlock = plainText[0: 200]
             newBlockNum = toBase10(alphabet70, newBlock, 70)
-            # Encode each block using the rules of RSA.  (Read n and e from public.txt)
-            
+            blocks.append(newBlockNum)
             plainText = plainText[200:]
-            
+
+        # Encode each block using the rules of RSA.  (Read n and e from public.txt) C = M^e mod n.
+        # for block in blocks:
+
+
+
+def getPublicKey():
+    with open("public.txt", "rb") as file:
+        lines = file.readlines()
+    return lines[0], lines[1]
+
+def toBaseN(alphabet, n, base):
+
+        other_base = ""
+        if n == 0:
+            return alphabet[0]
+        while n != 0:
+            other_base = alphabet[n % base] + other_base
+            n = n // base
+        if other_base == "":
+            other_base = "0"
+        return other_base
 
 def openFile(inputfile):
     fin = open(inputfile, "rb")
@@ -170,7 +191,8 @@ quote2 = "A man will find a single coin in the mud and talk about it for days bu
 def main():
     rsa = RSA()
     rsa.GenerateKeys(quote1, quote2)
-
+    alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    print(toBaseN(alphabet70, 0, 70))
         
     
     

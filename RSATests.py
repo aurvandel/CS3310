@@ -48,5 +48,10 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(RSA.inverse(test[0], test[1]), test[2])
 
 
+    def testToBaseN(self):
+        alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        self.assertEqual(RSA.toBaseN(alphabet70, 0, 70), '.')
+
+
 if __name__ == '__main__':
     unittest.main()
