@@ -3,6 +3,9 @@ import RSA
 import math
 
 rsa = RSA.RSA()
+alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+
 class MyTestCase(unittest.TestCase):
 
     def test26ToBase10SingleNumbers(self):
@@ -49,8 +52,28 @@ class MyTestCase(unittest.TestCase):
 
 
     def testToBaseN(self):
-        alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         self.assertEqual(RSA.toBaseN(alphabet70, 0, 70), '.')
+
+
+    def test10to70AndBack(self):
+        startingNumbers = [0, 596, 6732169763216889432, 4683559735441635]
+        for num in startingNumbers:
+            base70Num = RSA.toBaseN(alphabet70, num, 70)
+            base10Conversion = RSA.toBase10(alphabet70, base70Num, 70)
+            self.assertEqual(base10Conversion, num)
+
+
+    def test70to10AndBack(self):
+        startingStrings = ['alekslieshsle',
+                           "Wizards First Rule people are stupid Richard and Kahlan",
+                           "Wizards First Rule people are stupid Richard and Kahlan frowned even more People are stupid given proper " 
+                           "motivation almost anyone will believe almost anything Because people are stupid they will believe a lie " 
+                           "because they want to believe its true or because they are afraid it might be true"
+                           ]
+        for item in startingStrings:
+            base10Num = RSA.toBase10(alphabet70, item, 70)
+            base70Conversion = RSA.toBaseN(alphabet70, base10Num, 70)
+            self.assertEqual(base70Conversion, item)
 
 
 if __name__ == '__main__':

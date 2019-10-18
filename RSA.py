@@ -2,6 +2,14 @@
 import random
 import math
 
+# TODO: Make main function accept command line arguments to make running this easier.
+# TODO: Error handling for opening of files
+# TODO: Error handling for characters that don't appear in the alphabet70
+# TODO: Some test cases for the error handlers
+# TODO: Test cases for the entire program
+
+alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
 # Write a class called RSA
 class RSA:
 
@@ -45,49 +53,70 @@ class RSA:
             d = inverse(e, r)
 
             #Save n and e to a file called public.txt (write them as text, with 1 return after each number)
-            writeToFile(n, "public.txt")
-            writeToFile(e, "public.txt")
+            writeKeyToFile(n, "public.txt")
+            writeKeyToFile(e, "public.txt")
 
             # Save n and d to a file called private.txt
-            writeToFile(n, "private.txt")
-            writeToFile(d, "private.txt")
-
+            writeKeyToFile(n, "private.txt")
+            writeKeyToFile(d, "private.txt")
 
     # Write a method called Encrypt that takes as parameters the name of an input text file and the name of an output text file.
     def Encrypt(self, inFile, outFile):
-        alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         plainText = openFile(inFile)
 
         # Treat the input file text as a base 70 integer, and convert it to base 10, using block sizes so as to not exceed integer n.
         blocks = []
-        n, e = getPublicKey()
+        n, e = getKey("public.txt")
         while len(plainText) >= 200:
-            newBlock = plainText[0: 200]
+            newBlock = plainText[:200]
             newBlockNum = toBase10(alphabet70, newBlock, 70)
             blocks.append(newBlockNum)
             plainText = plainText[200:]
+        # convert the last block
+        lastBlock = toBase10(alphabet70, plainText, 70)
+        blocks.append(lastBlock)
 
         # Encode each block using the rules of RSA.  (Read n and e from public.txt) C = M^e mod n.
-        # for block in blocks:
+        fullMsg = ''
+        for block in blocks:
+            msgNum = pow(block, e, n)
+            msgTxt =toBaseN(alphabet70, msgNum, 70)
+            msgTxt += '$'
+            fullMsg += msgTxt
+
+        writeEncryptedData(fullMsg, outFile)
+
+    def Decrypt(self, inFile, outFile):
+        n, d = getKey("private.txt")
+        msgTxt = openFile(inFile)
+        txtBlocks = msgTxt.split('$')
+        msg = ''
+        for item in txtBlocks:
+            msgNum = toBase10(alphabet70, item, 70)
+            decodedMsgNum = pow(msgNum, d, n)
+            msg += toBaseN(alphabet70, decodedMsgNum, 70)
+        writeEncryptedData(msg, outFile)
 
 
+def writeEncryptedData(msg, filename):
+    with open(filename, "wb") as file:
+        file.write(msg.encode("utf-8"))
 
-def getPublicKey():
-    with open("public.txt", "rb") as file:
+def getKey(fileName):
+    with open(fileName, "rb") as file:
         lines = file.readlines()
-    return lines[0], lines[1]
+    return int(lines[0]), int(lines[1])
 
 def toBaseN(alphabet, n, base):
-
-        other_base = ""
+        result = ""
         if n == 0:
             return alphabet[0]
         while n != 0:
-            other_base = alphabet[n % base] + other_base
+            result = alphabet[n % base] + result
             n = n // base
-        if other_base == "":
-            other_base = "0"
-        return other_base
+        if result == "":
+            result = "0"
+        return result
 
 def openFile(inputfile):
     fin = open(inputfile, "rb")
@@ -96,7 +125,6 @@ def openFile(inputfile):
     fin.close()
     return PlainText
 
-
 def toBase10(alphabet, s, base):
     a = 0
     for c in s:
@@ -104,7 +132,6 @@ def toBase10(alphabet, s, base):
         a *= base
         a += value
     return a
-
 
 def egcd(a, b):
     lastR, r = abs(a), abs(b)
@@ -115,19 +142,16 @@ def egcd(a, b):
         y, lastY = lastY - quotient * y, y
     return lastR, lastX * (-1 if a < 0 else 1), lastY * (-1 if b < 0 else 1)
 
-
 def inverse(a, m):
     g, x, y = egcd(a, m)
     if g != 1:
         raise ValueError
     return x % m
 
-
 def computeGCD(x, y):
     while y:
         x, y = y, x % y
     return x
-
 
 def findRelativePrime(n):
     # Should this be changed from 400 digits to 398 digits?
@@ -135,7 +159,6 @@ def findRelativePrime(n):
     while math.gcd(n, nextN) != 1:
         nextN += 1
     return nextN
-
 
 def millersTest(n):
     # Returns True if num is a prime number.
@@ -156,7 +179,6 @@ def millersTest(n):
         p *= 2
     return False
 
-
 def isPrimeMiller(n):
     testTimes = 20
     for i in range(testTimes):
@@ -164,7 +186,6 @@ def isPrimeMiller(n):
         if not ok:
             return False
     return True
-
 
 def digitCount(number):
     count = 0
@@ -174,8 +195,7 @@ def digitCount(number):
 
     print("\n Number of digits = %d" % count)
 
-
-def writeToFile(n, filename):
+def writeKeyToFile(n, filename):
     with open(filename, 'a') as file:
         file.write(str(n))
         file.write('\n')
@@ -191,9 +211,8 @@ quote2 = "A man will find a single coin in the mud and talk about it for days bu
 def main():
     rsa = RSA()
     rsa.GenerateKeys(quote1, quote2)
-    alphabet70 = ".,?! \t\n\rabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    print(toBaseN(alphabet70, 0, 70))
-        
+    rsa.Encrypt("plainTextMsg.txt", "encryptedMsg.txt")
+    rsa.Decrypt("encryptedMsg.txt", "decryptedMsg.txt")
     
     
 main()
