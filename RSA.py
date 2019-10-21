@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import random
 import math
+import argparse
+import sys
 
-# TODO: Make main function accept command line arguments to make running this easier.
 # TODO: Error handling for opening of files
 # TODO: Error handling for characters that don't appear in the alphabet70
 # TODO: Some test cases for the error handlers
@@ -209,10 +210,22 @@ quote2 = "A man will find a single coin in the mud and talk about it for days bu
          " accounted one percent less than he expected then he will declare himself cheated"
 
 def main():
+    #Get Command Line Arguments
+    parser = argparse.ArgumentParser(description='filename of message to decrypt')
+    parser.add_argument('-d', '--decrypt', action="store", type=str, help='filename of message to decrypt')
+    parser.add_argument('-g', '--generate', action="store_true", default=False, help="generate RSA keys")
+    parser.add_argument('-e', '--encrypt', action="store", type=str, help="filename of message to encrypt")
+    args = parser.parse_args()
+
     rsa = RSA()
-    rsa.GenerateKeys(quote1, quote2)
-    rsa.Encrypt("plainTextMsg.txt", "encryptedMsg.txt")
-    rsa.Decrypt("encryptedMsg.txt", "decryptedMsg.txt")
+    if args.generate:
+        rsa.GenerateKeys(quote1, quote2)
+
+    if args.encrypt:
+        rsa.Encrypt(args.encrypt, "encryptedMsg.txt")
+
+    if args.decrypt:
+        rsa.Decrypt(args.decrypt, "decryptedMsg.txt")
     
     
 main()
